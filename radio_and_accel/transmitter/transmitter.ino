@@ -30,43 +30,23 @@ long prevRadioTime = 0; // Last time radio was triggered
 const int message = 1;
 RF24 radio(7, 8); // CE, CSN
 const byte address[6] = "00001";
-void setup() {
-  radio.begin();
-  radio.openWritingPipe(address);
-  radio.setPALevel(RF24_PA_MIN);
-  radio.stopListening();
 
+void setup() {
+  rfSet();
   #ifndef ESP8266
   while (!Serial);     // will pause Zero, Leonardo, etc until serial console opens
   #endif
 
   Serial.begin(9600);
-  Serial.println("LIS3DH test!");
-  
-  if (! lis.begin(0x18)) {   // change this to 0x19 for alternative i2c address
-    Serial.println("Couldnt start");
-    while (1);
-  }
-  Serial.println("LIS3DH found!");
-  
-  lis.setRange(LIS3DH_RANGE_4_G);   // 2, 4, 8 or 16 G!
-  
-  Serial.print("Range = "); Serial.print(2 << lis.getRange());  
-  Serial.println("G");
+  accelSet();
 }
-
-
-
-
-
-
 
 void loop() {
   buttUpdate();
-  transmitMessage(transmitBool, 100);
+  transmitMessage(transmitBool, 500);
   accelRead(2000);
 }
-//////////////////////////////// Functions
+////////////////////////////////////// Functions
 
 // Main function to read the accelerometer, takes the time between each reading
 void accelRead(int delayTime){
@@ -84,6 +64,7 @@ void accelRead(int delayTime){
   }
 }
 
+// Update the state of the button and whether the radio can transmit
 void buttUpdate(){
   butState = digitalRead(butPin);
   if ((prevButState == LOW) && (butState == HIGH)){
@@ -95,10 +76,35 @@ void buttUpdate(){
   prevButState = butState;
 }
 
+// Transmission message for the RF mod.
 void transmitMessage(int transmit, int delayTime){
   if ((transmit == 1) && (millis() - prevRadioTime >= delayTime)){
     radio.write(&message, sizeof(message));
     prevRadioTime = millis();
     transmitBool = 0;
   }
+}
+
+// Set up code for the radio mod.
+void rfSet(){
+  radio.begin();
+  radio.openWritingPipe(address);
+  radio.setPALevel(RF24_PA_MIN);
+  radio.stopListening();
+}
+
+// Set up code for the accelerometer
+void accelSet(){
+  Serial.println("LIS3DH test!");
+  
+  if (! lis.begin(0x18)) {   // change this to 0x19 for alternative i2c address
+    Serial.println("Couldnt start");
+    while (1);
+  }
+  Serial.println("LIS3DH found!");
+  
+  lis.setRange(LIS3DH_RANGE_4_G);   // 2, 4, 8 or 16 G!
+  
+  Serial.print("Range = "); Serial.print(2 << lis.getRange());  
+  Serial.println("G");
 }
