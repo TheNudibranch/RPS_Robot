@@ -1,4 +1,4 @@
-// Basic demo for accelerometer readings from Adaffruit LIS3DH
+// Basic demo for accelerometer readings from Adafruit LIS3DH
 
 #include <Wire.h>
 #include <SPI.h>
