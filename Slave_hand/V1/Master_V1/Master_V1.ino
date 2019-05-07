@@ -9,9 +9,8 @@ Servo middle;
 Servo ring;
 Servo pinky;
 Servo index;
-Servo thumb;
 
-int servo_ar[5] = {10,9,6,5,3};
+int servo_ar[5] = {10,9,6,5};
 int mode = 0;
 
 char text[32] = "";
@@ -24,6 +23,7 @@ int ledOn = 0;
 int message = 0;
 int winner = 0;
 int ledPin = 4;
+int ledPinComp = 3;
 
 int butPin = 2;
 int butState = 0;
@@ -46,10 +46,10 @@ void setup() {
   ring.attach(servo_ar[1]);
   pinky.attach(servo_ar[2]);
   index.attach(servo_ar[3]);
-  thumb.attach(servo_ar[4]);
 
   pinMode(ledPin, OUTPUT);
   pinMode(butPin, INPUT);
+  pinMode(ledPinComp, OUTPUT);
   lcd.noBacklight();
   lcd.noDisplay();
 
@@ -57,13 +57,13 @@ void setup() {
 
 void loop() {
   checkButState();
+  history();
   getGameState();
   updateLCD();
   endGame();
   ledFunc();
   prevText[0] = text[0];
   prevButState = butState;
-  
 }
 
 //////////////////////////////////////////// Functions
@@ -73,16 +73,33 @@ void endGame() {
     delay(1000);
     endLCD();
     int compChoice = random(1,4);
+    servoFunc(compChoice);
     endLCDComp(compChoice);
     whoWon(compChoice);
     ledSelect(winner);
-    servoFunc(2);
   }
   else if (text[0] != '4'){
     winner = 0;
     ledOn = 0;
-    servoFunc(1);
+    servoFunc(2);
   }
+}
+
+void history(){
+  if (analogRead(A3) > 800){
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Last Winner:");
+    lcd.setCursor(0,1);
+    if (winner == 1){
+      lcd.print("Human");
+    }
+    else if (winner == 2){
+      lcd.print("Computer");
+    }
+    delay(1500);
+  }
+
 }
 
 void whoWon(int compChoice){
@@ -111,7 +128,6 @@ void servoFunc(int choice){
     middle.write(5);
     ring.write(5);
     pinky.write(5);
-    thumb.write(5);
   }
   
   else if (choice == 1){
@@ -120,21 +136,30 @@ void servoFunc(int choice){
     middle.write(160);
     ring.write(160);
     pinky.write(160);
-    thumb.write(120);
   }
 
-  else if (mode == 3){
+  else if (choice == 3){
     // Scissors
     index.write(5);
     middle.write(5);
     ring.write(160);
     pinky.write(160);
-    thumb.write(90);
   }
 }
 
 void ledFunc(){
-  digitalWrite(ledPin, ledOn);
+  if (winner == 1){
+  digitalWrite(ledPin, HIGH);
+  digitalWrite(ledPinComp, LOW);
+  }
+  else if (winner == 2){
+    digitalWrite(ledPin, LOW);
+    digitalWrite(ledPinComp, HIGH);
+  }
+  else{
+    digitalWrite(ledPin, LOW);
+    digitalWrite(ledPinComp,LOW);
+  }
 }
 
 void checkButState(){
