@@ -50,6 +50,7 @@ void setup() {
   Serial.begin(9600);
   accelSet();
   setAccelRange();
+  setFlex();
 }
 
 void loop() {
@@ -63,11 +64,6 @@ void loop() {
 
 //////////////////////////////// Functions
 
-//void radioTest(){
-//  const char text[] = "Hello World";
-//  radio.write(&text, sizeof(text));
-//  delay(500);
-//}
 
 void updateGameArray(){
   if ((armState != prevArmState) && armState == 0){
@@ -76,10 +72,17 @@ void updateGameArray(){
     Serial.println(gameArray[0]);
     if (gameArray[0] == 4){
       updateHandPos();
+      updateGameString(gameArray[0]);
+      Serial.println(gameString);
+      radio.write(&gameString, sizeof(gameString));
+      gameArray[0] = 0;
+      gameString[1] = '0';
     }
-    updateGameString(gameArray[0]);
-    Serial.println(gameString);
-    radio.write(&gameString, sizeof(gameString));
+    else{
+      updateGameString(gameArray[0]);
+      Serial.println(gameString);
+      radio.write(&gameString, sizeof(gameString));
+    }
   }
 }
 
@@ -165,19 +168,39 @@ void accelSet(){
 
 void setFlex(){
   Serial.println("Close Hand");
-  delay(1500);
+  delay(5000);
   middleMin = analogRead(A4);
   ringMin = analogRead(A5);
   Serial.println("Open Hand");
+  delay(5000);
   middleMax = analogRead(A4);
   ringMax = analogRead(A5);
   compMiddle = (middleMax - middleMin) / 2;
   compRing = (ringMax - ringMin) / 2;
+  Serial.println(compMiddle);
+  Serial.println(compRing);
   
 }
 
 void updateHandPos(){
-  
+  // Let 1 be rock, 2 be paper, and 3 be scicorss
+  middlePos = analogRead(A4);
+  ringPos = analogRead(A5);
+  int normMiddle = middlePos - middleMin;
+  int normRing = ringPos - ringMin;
+
+  if ((normMiddle < compMiddle) && (normRing < compRing)){
+    Serial.println("Rock");
+    gameString[1] = '1';
+  }
+  else if ((normMiddle > compMiddle) && (normRing > compRing)){
+    Serial.println("Paper");
+    gameString[1] = '2';
+  }
+  else if ((normMiddle > compMiddle) && (normRing < compRing)){
+    Serial.println("Scicorss");
+    gameString[1] = '3';
+  }
 }
 
 void updateGameString(int gState){
