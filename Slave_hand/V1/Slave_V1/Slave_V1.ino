@@ -18,14 +18,28 @@ Adafruit_LIS3DH lis = Adafruit_LIS3DH(LIS3DH_CS);
 RF24 radio(7, 8); // CE, CSN
 const byte address[6] = "00001";
 
+int gameArray[2] = {0,0};
+char gameString[2] = "00";
+
 long prevAccelTime = 0; // Last time accelerometer was triggered
 float accelMin[2] = {0,0};
 float accelMax[2] = {0,0};
 float compX;
 float compY;
 float currentAccel[2] = {0,0};
-int ledOn = 0;
-int prevLedOn = 0;
+int armState = 0;
+int prevArmState = 0;
+
+int middlePos = 0;
+int middleMin = 0;
+int middleMax = 0;
+int ringMin = 0;
+int ringMax = 0;
+int ringPos = 0;
+float compMiddle;
+float compRing;
+
+
 
 void setup() {
   rfSet();
@@ -40,29 +54,43 @@ void setup() {
 
 void loop() {
   accelRead(200);
-  ledFunc();
-  transmitLed();
-  prevLedOn = ledOn;
+  armFunc();
+  updateGameArray();
+  prevArmState = armState;
+//  radioTest();
 }
 
 
 //////////////////////////////// Functions
 
-void transmitLed(){
-  if (ledOn != prevLedOn){
-    radio.write(&ledOn, sizeof(ledOn));
-    Serial.print("yo");
+//void radioTest(){
+//  const char text[] = "Hello World";
+//  radio.write(&text, sizeof(text));
+//  delay(500);
+//}
+
+void updateGameArray(){
+  if ((armState != prevArmState) && armState == 0){
+    Serial.println("yo");
+    gameArray[0] += 1;
+    Serial.println(gameArray[0]);
+    if (gameArray[0] == 4){
+      updateHandPos();
+    }
+    updateGameString(gameArray[0]);
+    Serial.println(gameString);
+    radio.write(&gameString, sizeof(gameString));
   }
 }
 
 // Change the state of the led
 // Basically, if the hand is up then the led should be on
-void ledFunc(){
+void armFunc(){
   if ((currentAccel[0] > compX) && (currentAccel[1] > compY)){
-    ledOn = 1;
+    armState = 1;
   }
   else{
-    ledOn = 0;
+    armState = 0;
   }
 }
 
@@ -133,4 +161,45 @@ void accelSet(){
   
   Serial.print("Range = "); Serial.print(2 << lis.getRange());  
   Serial.println("G");
+}
+
+void setFlex(){
+  Serial.println("Close Hand");
+  delay(1500);
+  middleMin = analogRead(A4);
+  ringMin = analogRead(A5);
+  Serial.println("Open Hand");
+  middleMax = analogRead(A4);
+  ringMax = analogRead(A5);
+  compMiddle = (middleMax - middleMin) / 2;
+  compRing = (ringMax - ringMin) / 2;
+  
+}
+
+void updateHandPos(){
+  
+}
+
+void updateGameString(int gState){
+  switch (gState){
+    case 0:
+    gameString[0] = '0';
+    break;
+    
+    case 1:
+    gameString[0] = '1';
+    break;
+
+    case 2:
+    gameString[0] = '2';
+    break;
+
+    case 3:
+    gameString[0] = '3';
+    break;
+
+    case 4:
+    gameString[0] = '4';
+    break;
+  }
 }

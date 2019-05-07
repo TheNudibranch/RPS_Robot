@@ -1,5 +1,8 @@
 // Test for the three different modes of the hand
+// Adding LCD to test I2c
 
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 #include <Servo.h>
 
 Servo middle;
@@ -11,7 +14,10 @@ Servo thumb;
 int servo_ar[5] = {10,9,6,5,3};
 int mode = 0;
 
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 void setup() {
+  lcd.backlight();
+  lcd.init();
   middle.attach(servo_ar[0]);
   ring.attach(servo_ar[1]);
   pinky.attach(servo_ar[2]);
@@ -27,6 +33,8 @@ void loop() {
       mode = inter;
     }
   } 
+  lcd.setCursor(0,0);
+  lcd.print("Halp");
   changeFunctions(mode);
   Serial.println(mode);
 }
