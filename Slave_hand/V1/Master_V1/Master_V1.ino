@@ -79,7 +79,6 @@ void endGame() {
     ledSelect(winner);
   }
   else if (text[0] != '4'){
-    winner = 0;
     ledOn = 0;
     servoFunc(2);
   }
@@ -97,6 +96,9 @@ void history(){
     else if (winner == 2){
       lcd.print("Computer");
     }
+    else if (winner == 3){
+      lcd.print("TIE");
+    }
     delay(1500);
   }
 
@@ -109,6 +111,7 @@ void whoWon(int compChoice){
   lcd.setCursor(0,1);
   if (((text[1] == '1') && (compChoice == 1)) || ((text[1] == '2') && (compChoice == 2 )) || ((text[1] == '3') && (compChoice == 3 ))){
     lcd.print("TIE!");
+    winner = 3;
   }
   else if (((text[1] == '1') && (compChoice == 3)) || ((text[1] == '2') && (compChoice == 1)) || ((text[1] == '3') && (compChoice == 2))){
     lcd.print("HUMAN!");

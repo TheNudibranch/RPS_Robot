@@ -24,6 +24,7 @@ void setup() {
   index.attach(servo_ar[3]);
   thumb.attach(servo_ar[4]);
   Serial.begin(9600);
+  Serial.print("YO");
 }
 
 void loop() {
