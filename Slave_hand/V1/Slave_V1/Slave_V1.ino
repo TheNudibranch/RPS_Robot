@@ -21,6 +21,8 @@ const byte address[6] = "00001";
 int gameArray[2] = {0,0};
 char gameString[2] = "00";
 
+int calTime = 5000;
+
 long prevAccelTime = 0; // Last time accelerometer was triggered
 float accelMin[2] = {0,0};
 float accelMax[2] = {0,0};
@@ -67,20 +69,19 @@ void loop() {
 
 void updateGameArray(){
   if ((armState != prevArmState) && armState == 0){
-    Serial.println("yo");
     gameArray[0] += 1;
-    Serial.println(gameArray[0]);
+//    Serial.println(gameArray[0]);
     if (gameArray[0] == 4){
       updateHandPos();
       updateGameString(gameArray[0]);
-      Serial.println(gameString);
+//      Serial.println(gameString);
       radio.write(&gameString, sizeof(gameString));
       gameArray[0] = 0;
       gameString[1] = '0';
     }
     else{
       updateGameString(gameArray[0]);
-      Serial.println(gameString);
+//      Serial.println(gameString);
       radio.write(&gameString, sizeof(gameString));
     }
   }
@@ -99,26 +100,39 @@ void armFunc(){
 
 // Set the max and min of the acceleromter for use
 void setAccelRange(){
-  Serial.println("Lower Arm");
-  delay(5000);
+  Serial.println("Beginning Calibration...");
+  Serial.print("Lower Arm");
+  delay(calTime/4);
+  Serial.print(".");
+  delay(calTime/4);
+  Serial.print(".");
+  delay(calTime/4);
+  Serial.println(".");
+  delay(calTime/4);
   sensors_event_t event; 
   lis.getEvent(&event);
   accelMin[0] = event.acceleration.x;
   accelMin[1] = event.acceleration.y;
-  Serial.print("Minimum ");
-  Serial.print(accelMin[0]);
-  Serial.print("      ");
-  Serial.println(accelMin[1]);
+//  Serial.print("Minimum ");
+//  Serial.print(accelMin[0]);
+//  Serial.print("      ");
+//  Serial.println(accelMin[1]);
 
-  Serial.println("Raise Arm");
-  delay(5000);
+  Serial.print("Raise Arm");
+  delay(calTime/4);
+  Serial.print(".");
+  delay(calTime/4);
+  Serial.print(".");
+  delay(calTime/4);
+  Serial.println(".");
+  delay(calTime/4);
   lis.getEvent(&event);
   accelMax[0] = event.acceleration.x;
   accelMax[1] = event.acceleration.y;
-  Serial.print("Maximum ");
-  Serial.print(accelMax[0]);
-  Serial.print("      ");
-  Serial.println(accelMax[1]);
+//  Serial.print("Maximum ");
+//  Serial.print(accelMax[0]);
+//  Serial.print("      ");
+//  Serial.println(accelMax[1]);
 
   compX = (accelMax[0] - accelMin[0]) / 2;
   compY = (accelMax[1] - accelMin[1]) / 2;
@@ -152,33 +166,46 @@ void rfSet(){
 
 // Set up code for the accelerometer
 void accelSet(){
-  Serial.println("LIS3DH test!");
+//  Serial.println("LIS3DH test!");
   
   if (! lis.begin(0x18)) {   // change this to 0x19 for alternative i2c address
     Serial.println("Couldnt start");
     while (1);
   }
-  Serial.println("LIS3DH found!");
+//  Serial.println("LIS3DH found!");
   
   lis.setRange(LIS3DH_RANGE_4_G);   // 2, 4, 8 or 16 G!
   
-  Serial.print("Range = "); Serial.print(2 << lis.getRange());  
-  Serial.println("G");
+//  Serial.print("Range = "); Serial.print(2 << lis.getRange());  
+//  Serial.println("G");
 }
 
 void setFlex(){
-  Serial.println("Close Hand");
-  delay(5000);
+  Serial.print("Close Hand");
+  delay(calTime/4);
+  Serial.print(".");
+  delay(calTime/4);
+  Serial.print(".");
+  delay(calTime/4);
+  Serial.println(".");
+  delay(calTime/4);
   middleMin = analogRead(A4);
   ringMin = analogRead(A5);
-  Serial.println("Open Hand");
-  delay(5000);
+  Serial.print("Open Hand");
+  delay(calTime/4);
+  Serial.print(".");
+  delay(calTime/4);
+  Serial.print(".");
+  delay(calTime/4);
+  Serial.println(".");
+  delay(calTime/4);
+  Serial.println("Good Luck");
   middleMax = analogRead(A4);
   ringMax = analogRead(A5);
   compMiddle = (middleMax - middleMin) / 2;
   compRing = (ringMax - ringMin) / 2;
-  Serial.println(compMiddle);
-  Serial.println(compRing);
+//  Serial.println(compMiddle);
+//  Serial.println(compRing);
   
 }
 
@@ -190,15 +217,15 @@ void updateHandPos(){
   int normRing = ringPos - ringMin;
 
   if ((normMiddle < compMiddle) && (normRing < compRing)){
-    Serial.println("Rock");
+//    Serial.println("Rock");
     gameString[1] = '1';
   }
   else if ((normMiddle > compMiddle) && (normRing > compRing)){
-    Serial.println("Paper");
+//    Serial.println("Paper");
     gameString[1] = '2';
   }
   else if ((normMiddle > compMiddle) && (normRing < compRing)){
-    Serial.println("Scicorss");
+//    Serial.println("Scicorss");
     gameString[1] = '3';
   }
 }
