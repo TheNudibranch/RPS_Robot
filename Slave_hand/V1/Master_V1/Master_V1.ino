@@ -25,6 +25,9 @@ int winner = 0;
 int ledPin = 4;
 int ledPinComp = 3;
 
+int humWins = 0;
+int compWins = 0;
+
 int butPin = 2;
 int butState = 0;
 int prevButState = 0;
@@ -70,15 +73,16 @@ void loop() {
 
 void endGame() {
   if ((text[0] == '4') && (prevText[0] != text[0])){
-    delay(1000);
-    endLCD();
     int compChoice = random(1,4);
     servoFunc(compChoice);
+    delay(1000);
+    endLCD();
     endLCDComp(compChoice);
     whoWon(compChoice);
     ledSelect(winner);
   }
   else if (text[0] != '4'){
+    winner = 0;
     ledOn = 0;
     servoFunc(2);
   }
@@ -88,18 +92,11 @@ void history(){
   if (analogRead(A3) > 800){
     lcd.clear();
     lcd.setCursor(0,0);
-    lcd.print("Last Winner:");
+    lcd.print("Human: ");
+    lcd.print(humWins);
     lcd.setCursor(0,1);
-    if (winner == 1){
-      lcd.print("Human");
-    }
-    else if (winner == 2){
-      lcd.print("Computer");
-    }
-    else if (winner == 3){
-      lcd.print("TIE");
-    }
-    delay(1500);
+    lcd.print("Computer: ");
+    lcd.print(compWins);
   }
 
 }
@@ -116,10 +113,12 @@ void whoWon(int compChoice){
   else if (((text[1] == '1') && (compChoice == 3)) || ((text[1] == '2') && (compChoice == 1)) || ((text[1] == '3') && (compChoice == 2))){
     lcd.print("HUMAN!");
     winner = 1;
+    humWins += 1;
   }
   else{
     lcd.print("COMPUTER!");
     winner = 2;
+    compWins += 1;
   }
   delay(1500);
 }
@@ -159,6 +158,10 @@ void ledFunc(){
     digitalWrite(ledPin, LOW);
     digitalWrite(ledPinComp, HIGH);
   }
+  else if (winner == 3){
+    digitalWrite(ledPin, HIGH);
+    digitalWrite(ledPinComp, HIGH);
+  }
   else{
     digitalWrite(ledPin, LOW);
     digitalWrite(ledPinComp,LOW);
@@ -172,11 +175,12 @@ void checkButState(){
       if (lcdOn == 1){
       lcd.backlight();
       lcd.display();
+      lcd.clear();
       lcd.setCursor(0,0);
       lcd.print("Let's Play");
       lcd.setCursor(0,1);
       lcd.print("RPS!");
-      delay(1500);
+      delay(500);
     }
     else if (lcdOn == 0){
       lcd.noBacklight();
